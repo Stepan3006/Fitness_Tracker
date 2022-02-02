@@ -51,7 +51,9 @@ class Training:
 
     def get_spent_calories(self) -> float:
         """Получить количество затраченных калорий."""
-        NotImplementedError
+        raise NotImplementedError('Забыл переопределить метод,'
+                                  'подсчитывающий калории в '
+                                  'дочернем классе')
 
     def show_training_info(self) -> InfoMessage:
         """Вернуть информационное сообщение о выполненной тренировке."""
@@ -67,13 +69,13 @@ class Training:
 class Running(Training):
     """Тренировка: бег."""
     CALORIES_MEAN_SPEED_MULTIPLIER: float = 18
-    COEFF_MEAN_SPEED_SUBSTRACTION: float = 20
+    CALORIES_MEAN_SPEED_SUBSTRACTION: float = 20
 
     def get_spent_calories(self) -> float:
         """Получить количество затраченных калорий при беге."""
         spent_calories: float = ((self.CALORIES_MEAN_SPEED_MULTIPLIER
                                  * self.get_mean_speed()
-                                 - self.COEFF_MEAN_SPEED_SUBSTRACTION)
+                                 - self.CALORIES_MEAN_SPEED_SUBSTRACTION)
                                  * self.weight / self.M_IN_KM
                                  * self.duration_h * self.H_IN_M)
         return spent_calories
@@ -81,8 +83,8 @@ class Running(Training):
 
 class SportsWalking(Training):
     """Тренировка: спортивная ходьба."""
-    CALORIES_WEIGHT_MULTIPLIER_1: float = 0.035
-    CALORIES_WEIGHT_MULTIPLIER_2: float = 0.039
+    CALORIES_WEIGHT_MULTIPLIER_FIRST: float = 0.035
+    CALORIES_WEIGHT_MULTIPLIER_SECOND: float = 0.039
 
     def __init__(self,
                  action: int,
@@ -96,10 +98,10 @@ class SportsWalking(Training):
     def get_spent_calories(self) -> float:
         """Получить количество затраченных калорий при спортивной ходьбе."""
         spent_calories: float = (((
-            self.CALORIES_WEIGHT_MULTIPLIER_1
+            self.CALORIES_WEIGHT_MULTIPLIER_FIRST
             * self.weight
             + (self.get_mean_speed() ** 2 // self.height)
-            * self.CALORIES_WEIGHT_MULTIPLIER_2 * self.weight))
+            * self.CALORIES_WEIGHT_MULTIPLIER_SECOND * self.weight))
             * self.duration_h * self.H_IN_M
         )
         return spent_calories
@@ -109,7 +111,7 @@ class Swimming(Training):
     """Тренировка: плавание."""
     LEN_STEP: float = 1.38
     CALORIES_WEIGHT_MULTIPLIER: float = 1.1
-    COEFF_MEAN_SPEED: float = 2
+    CALORIES_MEAN_SPEED: float = 2
 
     def __init__(self,
                  action: int,
@@ -137,7 +139,7 @@ class Swimming(Training):
         """Получить количество затраченных калорий при плавании."""
         mean_speed: float = self.get_mean_speed()
         spent_calories: float = ((mean_speed + self.CALORIES_WEIGHT_MULTIPLIER)
-                                 * self.COEFF_MEAN_SPEED * self.weight)
+                                 * self.CALORIES_MEAN_SPEED * self.weight)
         return spent_calories
 
 
@@ -148,7 +150,7 @@ def read_package(workout_type: str, data: List[float]) -> Training:
         'WLK': SportsWalking,
         'SWM': Swimming
     }
-    if variant_training.get(workout_type) is None:
+    if workout_type not in variant_training:
         raise ValueError("Данного типа тренировки нет в базе.")
     return variant_training[workout_type](*data)
 
